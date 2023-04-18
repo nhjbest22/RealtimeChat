@@ -1,0 +1,16 @@
+{
+  "name": "realtimechat",
+  "version": "1.0.0",
+  "description": "RealtimeChat program. this will used in my office",
+  "main": "app.js",
+  "scripts": {
+    "run": "nodemon --watch app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "http": "^0.0.1-security",
+    "socket.io": "^4.6.1"
+  }
+}

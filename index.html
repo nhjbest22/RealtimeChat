@@ -37,9 +37,7 @@
         });
 
         socket.on('new user', (msg)=>{
-          // window.alert(msg);
-          msg.split('\n').forEach((msg)=>{
-            // window.alert(msg);
+          msg.split('\n').filter((msg)=> msg != '').forEach((msg)=>{
             let item = document.createElement('li');
             item.textContent = msg;
             messages.appendChild(item);

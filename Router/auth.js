@@ -31,15 +31,18 @@ router.route('/register')
         db.query(sql, params, (error, result)=>{
             if(error){
                 console.error(error);
-                res.status(500).send("회원가입 실패").redirect('/');
-            }else
-                res.status(300).send("회원가입 성공").redirect('/');
+                res.redirect('/');
+            }else{
+                console.log("회원가입 성공")
+                res.redirect('/');
+            }
         });
     })
 
 
 router.route('/login')
     .get((req, res)=>{
+        if(req.session.user) res.redirect('/');
         console.log("login 화면 진입");
         res.sendFile(path.join(__dirname, '../login.html'));
     })
@@ -60,12 +63,19 @@ router.route('/login')
                         userid : userid,
                         username : result[0].username,
                     }
+                    console.log("로그인 성공");
+                    console.log(req.session);
+                    res.redirect('/');
+                }else{
+                    console.log("비밀번호 불일치");
+                    res.send("<script>alert('비밀번호가 일치하지 않습니다'); location = document.referrer; </script>");
                 }
-                console.log("로그인 성공");
-                console.log(req.session);
+                
+            } else{
+                console.log("아이디 미발견")
+                res.send("<script>alert('존재하지 않는 아이디입니다'); location = document.referrer; </script>");
             }
-            res.redirect('/');
-         })
+         });
     })
 
 router.route('/logout')

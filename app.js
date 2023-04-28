@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 const authRouter = require('./Router/auth.js');
 
@@ -32,8 +33,10 @@ try{
     fs.writeFileSync(filePath, '');
 }//채팅 데이터 저장을 위한 임시 파일 확인 및 생성
 
+//파싱을 위한 미들웨어 사용
+app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false})); //파싱을 위한 미들웨어 사용
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -42,14 +45,20 @@ app.use(session({
     cookie: {maxAge: 86400000},
 }))
 
-app.get('/', (req, res)=>{
-    res.sendFile(path.join(__dirname, 'main.html'));
-})
-
 app.use('/auth', authRouter);
 
+app.get('/', (req, res)=>{
+    if(req.session.user){
+        res.redirect('/chat')
+    }
+    else res.redirect('/auth/login');
+})
+
+
 app.get('/chat', (req, res) =>{
-    res.sendFile(path.join(__dirname, 'index.html'));
+    if(req.session.user)
+        res.sendFile(path.join(__dirname, 'index.html'));
+    else res.redirect('/auth/login');
 })
 
 io.on('connection', (socket)=>{

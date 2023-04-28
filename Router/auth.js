@@ -24,26 +24,58 @@ router.route('/register')
 
         //비밀번호 암호화
         const salt = crypto.randomBytes(64).toString("base64");
-        const hashedPassword = crypto.pbkdf2Sync(password , salt , 100000, 64, "sha512").toString("base64");
+        const hashedPassword = crypto.pbkdf2Sync(password , salt , 10000, 64, "sha512").toString("base64");
         const sql = 'INSERT INTO users (userid, password, salt, username) VALUES (?,?,?,?)';
         const params = [userid, hashedPassword, salt, username];
         
         db.query(sql, params, (error, result)=>{
             if(error){
                 console.error(error);
-                res.status(500).send("회원가입 실패")
+                res.status(500).send("회원가입 실패").redirect('/');
             }else
-                res.status(300).send("회원가입 성공");
+                res.status(300).send("회원가입 성공").redirect('/');
         });
     })
 
 
 router.route('/login')
     .get((req, res)=>{
-        res.sendFile(path.join(__dirname, '../main.html'));
+        console.log("login 화면 진입");
+        res.sendFile(path.join(__dirname, '../login.html'));
     })
     .post((req, res)=>{
-         
+         const userid = req.body.userid;
+         const password = req.body.password;
+
+         const sql = "SELECT * FROM users WHERE userid = ?";
+         const params = [userid]
+         db.query(sql, params, (err, result) =>{
+            if(result.length){
+                const salt = result[0].salt;
+                const pw = result[0].password;
+                const hashedPassword = crypto.pbkdf2Sync(password , salt , 10000, 64, "sha512").toString("base64");
+                if(pw == hashedPassword){
+                    req.session.user = {
+                        authorized: true,
+                        userid : userid,
+                        username : result[0].username,
+                    }
+                }
+                console.log("로그인 성공");
+                console.log(req.session);
+            }
+            res.redirect('/');
+         })
+    })
+
+router.route('/logout')
+    .get((req, res)=>{
+        req.session.destroy((err)=>{
+            if(err){
+                console.log("로그아웃 중 에러가 발생하였습니다.");
+            }
+            else res.redirect('/auth/login');
+        });
     })
 
 module.exports = router;

@@ -2,3 +2,4 @@ node_modules
 .env
 config
 chatdata.txt
+toDoList.txt

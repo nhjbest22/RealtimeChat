@@ -9,7 +9,7 @@ const path = require('path');
 
 router.route('/register')
     .get((req, res)=>{
-        console.log("get 진입")
+        console.log("회원가입 페이지 접속");
         res.sendFile(path.join(__dirname, '../register.html'));
     })
     .post(async (req, res, next)=>{
@@ -18,27 +18,40 @@ router.route('/register')
         const password = req.body.password;
         const password2 = req.body.password2;
         const username = req.body.username;
-        if(password != password2){
-            res.status(500).send("비밀번호가 일치하지 않습니다.");
-        }
-
+        
         //비밀번호 암호화
         const salt = crypto.randomBytes(64).toString("base64");
         const hashedPassword = crypto.pbkdf2Sync(password , salt , 10000, 64, "sha512").toString("base64");
+        
         const sql = 'INSERT INTO users (userid, password, salt, username) VALUES (?,?,?,?)';
         const params = [userid, hashedPassword, salt, username];
         
         db.query(sql, params, (error, result)=>{
             if(error){
                 console.error(error);
-                res.redirect('/');
             }else{
                 console.log("회원가입 성공")
-                res.redirect('/');
+                res.redirect('/auth/login')
             }
         });
+        // res.redirect('/auth/login');
     })
 
+
+router.route('/id_confirm')
+    .post((req, res)=>{
+        const userid = req.body.userid;
+        const sql = "SELECT * FROM users WHERE userid = ?";
+        const params = [userid];
+
+        db.query(sql, params, (error, result)=>{
+            if(error){
+                console.error(error);
+                res.status(500).send("Internal Server Error");
+            }else
+                res.send({cnt: result.length});
+        })
+    })
 
 router.route('/login')
     .get((req, res)=>{

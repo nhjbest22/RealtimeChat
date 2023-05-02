@@ -4,7 +4,7 @@
   "description": "RealtimeChat program. this will used in my office",
   "main": "app.js",
   "scripts": {
-    "run": "nodemon --watch app.js"
+    "run": "nodemon --watch Router/ --watch app.js app.js"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +16,7 @@
     "express": "^4.18.2",
     "express-mysql-session": "^3.0.0",
     "express-session": "^1.17.3",
+    "express-socket.io-session": "^1.3.5",
     "http": "^0.0.1-security",
     "mysql": "^2.18.1",
     "socket.io": "^4.6.1"

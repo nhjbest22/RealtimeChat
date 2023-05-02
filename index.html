@@ -36,7 +36,10 @@
             }
         });
 
-        socket.on('new user', (msg)=>{
+        socket.on('new user', (msg, name)=>{
+          socket.name = name;
+          messages.textContent = ''; //기존에 있던 채팅 데이터 삭제
+
           msg.split('\n').filter((msg)=> msg != '').forEach((msg)=>{
             let item = document.createElement('li');
             item.textContent = msg;
@@ -45,11 +48,42 @@
           })
         })
 
+        input.addEventListener('focusin', (e)=>{
+          socket.emit('typing', socket.name);
+        })
+
+        input.addEventListener('focusout', (e)=>{
+          socket.emit('untyping', socket.name);
+        })
+
         socket.on('chat message', (msg)=>{
             let item = document.createElement('li');
             item.textContent = msg;
             messages.appendChild(item);
+
+            //유저가 채팅중인 정보 가장 아래로 내리기
             window.scrollTo(0, document.body.scrollHeight);
+        })
+
+        socket.on('update', (msg)=>{
+            let item = document.createElement('li');
+            item.textContent = msg;
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        })
+
+        socket.on('typing', (name)=>{
+          let item = document.createElement('li');
+          item.id = name;
+          item.textContent = `${name}님이 입력중입니다.`;
+          messages.appendChild(item);
+          window.scrollTo(0, document.body.scrollHeight);
+        })
+        
+        socket.on('untyping', (name)=>{
+          let item = document.getElementById(name);
+          item.parentNode.removeChild(item);
+          window.scrollTo(0, document.body.scrollHeight);
         })
     </script>
   </body>

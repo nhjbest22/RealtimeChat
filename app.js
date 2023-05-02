@@ -9,11 +9,11 @@ const filePath = './chatdata.txt';
 const fs = require('fs');
 const dotenv = require('dotenv'); dotenv.config();
 const port = process.env.PORT || 8080;
-const crypto = require('crypto');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const ios = require('express-socket.io-session'); //socket.io 에서 session 을 사용하기 위해 선언
 
 const authRouter = require('./Router/auth.js');
 
@@ -26,6 +26,14 @@ const sessionStore = new MySQLStore({
     database: process.env.db_database,
 })
 
+const Session = session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    store: sessionStore,
+    cookie: {maxAge: 86400000},
+});
+
 try{
     fs.readFileSync(filePath);
 }catch(err){
@@ -37,13 +45,9 @@ try{
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    store: sessionStore,
-    cookie: {maxAge: 86400000},
-}))
+
+app.use(Session) //접속 정보 저장을 위한 mysql-session 사용
+io.use(ios(Session, {autoSave: true}));
 
 app.use('/auth', authRouter);
 
@@ -54,25 +58,39 @@ app.get('/', (req, res)=>{
     else res.redirect('/auth/login');
 })
 
-
 app.get('/chat', (req, res) =>{
-    if(req.session.user)
+    if(req.session.user){
         res.sendFile(path.join(__dirname, 'index.html'));
+    }
     else res.redirect('/auth/login');
 })
 
 io.on('connection', (socket)=>{
     let chatData = fs.readFileSync(filePath, "utf8");
     console.log("user user come!");
-    socket.emit('new user', chatData);
+    const user = socket.handshake.session.user;
+    socket.emit('new user', chatData, user.username);
+    io.emit('update', user.username + '님이 접속하였습니다.'); //모두에게 이벤트 발생
 
     socket.on('disconnect', ()=>{
+        const user = socket.handshake.session.user;
+        socket.broadcast.emit('update', user.username + '님이 퇴장하였습니다.');
         console.log('user disconnected!');
     })
     socket.on('chat message', (msg)=>{
         console.log("chat message!");
-        fs.appendFileSync(filePath, msg+ '\n');
-        io.emit('chat message', msg); //분석 필요
+        const user = socket.handshake.session.user;
+        const chat = user.username + ': ' + msg;
+        fs.appendFileSync(filePath, chat+ '\n');
+        io.emit('chat message', chat); //분석 필요
+    })
+
+    socket.on('typing', (name)=>{
+        socket.broadcast.emit('typing', name);
+    })
+
+    socket.on('untyping', (name)=>{
+        socket.broadcast.emit('untyping', name);
     })
 })
 

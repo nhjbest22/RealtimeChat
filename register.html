@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>    
-  <title>Login TEST - ${title}</title>
+  <title>Register TEST</title>
   <meta charset="utf-8">
   <style>
     @import url(http://fonts.googleapis.com/earlyaccess/notosanskr.css);
@@ -66,14 +66,76 @@
 <body>
     <div class="background">
         <h2>회원가입</h2>
-        <form action="/auth/register" method="post">
+        <form action="/auth/register" method="post" id="frm">
         <p><input class="login" type="text" name="userid" placeholder="아이디"></p>
+        <div id = "id_div"></div>
         <p><input class="login" type="password" name="password" placeholder="비밀번호"></p>    
+        <div id = "password_div"></div>
         <p><input class="login" type="password" name="password2" placeholder="비밀번호 재확인"></p>
+        <div id = "password2_div"></div>
         <p><input class="login" type="text" name="username" placeholder="닉네임"></p>
         <p><input class="btn" type="submit" value="제출"></p>
         </form>
         <p><a href="/">로그인화면으로 돌아가기</a></p>
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(()=>{
+            $('input[name=userid]').on('focusout', ()=>{
+                let id = $('input[name=userid]').val();
+                if(id == '' || id.lenth == 0){
+                    alret("아이디를 입력해주세요.");
+                    return false;
+                }
+                $.ajax({
+                    url: '/auth/id_confirm',
+                    type: 'POST',
+                    dataType: 'JSON',
+                    data: {"userid" : id},
+                })
+                .done((result)=>{
+                    if(result.cnt == 0){
+                        $('#id_div').html("<a>사용 가능한 ID입니다.</a>");
+                    }
+                    else{
+                        $('#id_div').html('<a style = "color: red;">사용 불가능한 ID입니다.</a>');
+                    }
+                })
+            })
+            $('input[name=password2]').on('focusout', ()=>{
+                const password = $('input[name=password]').val();
+                const password2 = $('input[name=password2]').val();
+                if(password == '' || password.length  == 0)
+                    $('#password_div').html('<a style = "color: red;">비밀번호를 입력하세요.</a>')
+                if(password != password2)
+                    $('#password2_div').html('<a style = "color: red;">비밀번호가 동일하지 않습니다.</a>')
+                else
+                    $('#password2_div').html('');   
+            })
+        })
+        $('#frm').submit((e)=>{
+            let check = true;
+            $.ajax({
+                    url: '/auth/id_confirm',
+                    type: 'POST',
+                    dataType: 'JSON',
+                    async: false,
+                    data: {"userid" : $('input[name=userid]').val()},
+            })
+            .done((result)=>{
+                if(result.cnt > 0){
+                    $('input[name=userid]').focus();
+                    alert('이미 존재하는 아이디입니다.');
+                    check = false;
+                }
+                else if($('input[name=password]').val() != $('input[name=password2]').val()){
+                    alert('비밀번호가 동일하지 않습니다.')
+                    $('input[name=password]').focus();
+                    check = false;
+                }
+            })
+            return check;            
+        })
+    </script>
 </body>
 </html>

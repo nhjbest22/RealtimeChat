@@ -76,7 +76,7 @@
         <p><input class="login" type="text" name="username" placeholder="닉네임"></p>
         <p><input class="btn" type="submit" value="제출"></p>
         </form>
-        <p><a href="/">로그인화면으로 돌아가기</a></p>
+        <p><a href="/">로그인 화면으로 돌아가기</a></p>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
@@ -105,12 +105,15 @@
             $('input[name=password2]').on('focusout', ()=>{
                 const password = $('input[name=password]').val();
                 const password2 = $('input[name=password2]').val();
+                // alert(password);
                 if(password == '' || password.length  == 0)
                     $('#password_div').html('<a style = "color: red;">비밀번호를 입력하세요.</a>')
-                if(password != password2)
+                else if(password != password2)
                     $('#password2_div').html('<a style = "color: red;">비밀번호가 동일하지 않습니다.</a>')
-                else
-                    $('#password2_div').html('');   
+                else{
+                    $('#password_div').html('');
+                    $('#password2_div').html('');
+                }
             })
         })
         $('#frm').submit((e)=>{
@@ -134,7 +137,7 @@
                     check = false;
                 }
             })
-            return check;            
+            return check;
         })
     </script>
 </body>

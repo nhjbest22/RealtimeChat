@@ -16,6 +16,7 @@ const cookieParser = require('cookie-parser');
 const ios = require('express-socket.io-session'); //socket.io 에서 session 을 사용하기 위해 선언
 
 const authRouter = require('./Router/auth.js');
+const testRouter = require('./Router/test.js');
 
 /** mysql 파일 스토어 설정 */
 const sessionStore = new MySQLStore({
@@ -49,7 +50,6 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(Session) //접속 정보 저장을 위한 mysql-session 사용
 io.use(ios(Session, {autoSave: true}));
 
-app.use('/auth', authRouter);
 
 app.get('/', (req, res)=>{
     if(req.session.user){
@@ -57,6 +57,11 @@ app.get('/', (req, res)=>{
     }
     else res.redirect('/auth/login');
 })
+
+app.use('/auth', authRouter);
+
+app.use('/test', express.static( 'dist'));
+app.use('/test', testRouter);
 
 app.get('/chat', (req, res) =>{
     if(req.session.user){
@@ -67,7 +72,7 @@ app.get('/chat', (req, res) =>{
 
 io.on('connection', (socket)=>{
     let chatData = fs.readFileSync(filePath, "utf8");
-    console.log("user user come!");
+    console.log("new user come!");
     const user = socket.handshake.session.user;
     socket.emit('new user', chatData, user.username);
     io.emit('update', user.username + '님이 접속하였습니다.'); //모두에게 이벤트 발생

@@ -1,8 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql');
-const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
 const crypto = require("crypto");
 const db = require('../config/db');
 const path = require('path');
@@ -16,7 +13,6 @@ router.route('/register')
         console.log('회원가입 요청');
         const userid = req.body.userid;
         const password = req.body.password;
-        const password2 = req.body.password2;
         const username = req.body.username;
         
         //비밀번호 암호화
@@ -31,10 +27,10 @@ router.route('/register')
                 console.error(error);
             }else{
                 console.log("회원가입 성공")
-                res.redirect('/auth/login')
+                // res.redirect('/auth/login')
             }
         });
-        // res.redirect('/auth/login');
+        res.redirect('/auth/login');
     })
 
 

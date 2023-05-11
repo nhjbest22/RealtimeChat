@@ -43,6 +43,9 @@
           msg.split('\n').filter((msg)=> msg != '').forEach((msg)=>{
             let item = document.createElement('li');
             item.textContent = msg;
+            if(msg.split(':')[0] == socket.name){
+              item.style = 'text-align:right';
+            }else item.style = 'text-align:left';
             messages.appendChild(item);
             window.scrollTo(0, document.body.scrollHeight);
           })

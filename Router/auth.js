@@ -72,6 +72,9 @@ router.route('/login')
                         userid : userid,
                         username : result[0].username,
                     }
+                    req.session.save(err =>{
+                        if(err) console.error(err);
+                    })
                     console.log("로그인 성공");
                     console.log(req.session);
                     res.redirect('/');

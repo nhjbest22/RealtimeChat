@@ -16,7 +16,8 @@ const cookieParser = require('cookie-parser');
 const ios = require('express-socket.io-session'); //socket.io 에서 session 을 사용하기 위해 선언
 
 const authRouter = require('./Router/auth.js');
-const testRouter = require('./Router/test.js');
+const chatRouter = require('./Router/chat.js');
+const dataRouter = require('./Router/data.js');
 
 /** mysql 파일 스토어 설정 */
 const sessionStore = new MySQLStore({
@@ -50,22 +51,16 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(Session) //접속 정보 저장을 위한 mysql-session 사용
 io.use(ios(Session, {autoSave: true}));
 
-
-app.get('/', (req, res)=>{
-    if(req.session.user){
-        res.redirect('/chat')
-    }
-    else res.redirect('/auth/login');
-})
-
 app.use('/auth', authRouter);
 
-app.use('/test', express.static( 'dist'));
-app.use('/test', testRouter);
+app.use('/chat', express.static( 'dist'));
+app.use('/chat', chatRouter);
 
-app.get('/chat', (req, res) =>{
+app.use('/data', dataRouter);
+
+app.get('/', (req, res) =>{
     if(req.session.user){
-        res.sendFile(path.join(__dirname, 'index.html'));
+        res.redirect('/chat');
     }
     else res.redirect('/auth/login');
 })
@@ -85,9 +80,12 @@ io.on('connection', (socket)=>{
     socket.on('chat message', (msg)=>{
         console.log("chat message!");
         const user = socket.handshake.session.user;
-        const chat = user.username + ': ' + msg;
-        fs.appendFileSync(filePath, chat+ '\n');
-        io.emit('chat message', chat); //분석 필요
+        const data = {
+            sender: user,
+            msg: msg
+        }
+        fs.appendFileSync(filePath, `${user.username}: ` + msg+ '\n');
+        socket.broadcast.emit('chat message', data); //모든 클라이언트에게 이벤트 발생
     })
 
     socket.on('typing', (name)=>{

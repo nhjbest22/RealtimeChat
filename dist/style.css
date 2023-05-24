@@ -73,6 +73,7 @@ body, html {
   background: white;
   box-shadow: 0 0 8rem 0 rgba(0, 0, 0, 0.1), 2rem 2rem 4rem -3rem rgba(0, 0, 0, 0.5);
   transition: transform 500ms;
+  overflow-y: auto;
 }
 .contacts h2 {
   margin: 0.5rem 0 1.5rem 5rem;
@@ -143,7 +144,7 @@ body, html {
   max-width: 66%;
   box-shadow: 0 0 2rem rgba(0, 0, 0, 0.075), 0rem 1rem 1rem -1rem rgba(0, 0, 0, 0.1);
 }
-.chat .messages .message.parker {
+.chat .messages .message.send {
   margin: 1rem 1rem 1rem auto;
   border-radius: 1.125rem 1.125rem 0 1.125rem;
   background: #333;
@@ -193,7 +194,7 @@ body, html {
   background-image: none;
   background-color: white;
   padding: 0.5rem 1rem;
-  margin-right: 0.8rem;
+  margin-right: 0.3rem;
   margin-left: -1.5rem;
   border-radius: 1.125rem;
   flex-grow: 2;
